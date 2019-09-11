@@ -20,20 +20,11 @@ function addViewImageButton(container) {
   if (existingImageLink) {
     existingImageLink.href = image.src;
   } else {
-    const buttonsRow = container.querySelector(".irc_but_r tbody tr");
-    if (!buttonsRow) {
-      console.log("could not find buttons row under ", container);
+    const parentAnchor = image.closest("a");
+    if (!parentAnchor) {
+      console.log("could not find parent anchor tag for", image);
     } else {
-      const imageLink = document.createElement("a");
-      imageLink.classList.add(VIEW_IMAGE_CLASS);
-      imageLink.href = image.src;
-      // Need to put the link text in a span to get nice styling.
-      const imageText = document.createElement("span");
-      imageText.textContent = "View image";
-      imageLink.appendChild(imageText);
-      const viewColumn = document.createElement("td");
-      viewColumn.appendChild(imageLink);
-      buttonsRow.insertBefore(viewColumn, buttonsRow.firstChild);
+      parentAnchor.href = image.src;
     }
   }
 }
@@ -59,4 +50,3 @@ if (resultsContainer) {
 } else {
   console.log("could not find results container #res");
 }
-
