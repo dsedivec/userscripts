@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name Remove fixed headers
-// @namespace Violentmonkey Scripts
+// @namespace org.codefu
 // @match *://*/*
 // @grant none
 // ==/UserScript==
