@@ -7,8 +7,10 @@
 // ==/UserScript==
 
 // Sites to test this with:
-// https://thewirecutter.com
-// Pretty much anything on Medium
+// * https://thewirecutter.com
+// * Pretty much anything on Medium
+// * Google search results
+// * Maybe Mailinator?  (See comment below.)
 
 // Maybe remove position=fixed from element el.
 function removePositionFixed(el) {
