@@ -3,6 +3,7 @@
 // @namespace org.codefu
 // @match *://*/*
 // @exclude /^https?://[^/]*\bgithub\.com(/|$)/
+// @exclude /^https?://www.google.com/maps//
 // @grant none
 // ==/UserScript==
 
