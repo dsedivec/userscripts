@@ -28,6 +28,22 @@ let instrument = (message, f) => {
 // and how long they take.
 instrument = (message, f) => f;
 
+const MAX_OBSERVER_CALLS = 100;
+
+function limitObserver(observerName, wrapped) {
+  let numCalls = 0;
+  return (mutations, observer) => {
+    try {
+      return wrapped(mutations, observer);
+    } finally {
+      if (++numCalls > MAX_OBSERVER_CALLS) {
+        observer.disconnect();
+        console.log(`${observerName} disconnected after ${numCalls} call(s)`);
+      }
+    }
+  };
+}
+
 // Maybe remove position=fixed from element el.
 function removePositionFixed(el, source) {
   const style = window.getComputedStyle(el);
@@ -71,17 +87,20 @@ function removePositionFixedAll(el, source) {
 }
 
 const styleAttrObserver = new MutationObserver(
-  instrument('In-line style observer', mutations => {
-    for (const mutation of mutations) {
-      // We know "style" attribute just changed, do this before
-      // delegating to removePositionFixed, which will call
-      // getComputedStyle, which is probably much slower than this
-      // check.  (I'm guessing.  Oh god, this is actually slower, isn't it.)
-      if (mutation.target.style.position === 'fixed') {
-        removePositionFixed(mutation.target, 'Inline style change');
+  instrument(
+    'In-line style observer',
+    limitObserver('In-line style observer', mutations => {
+      for (const mutation of mutations) {
+        // We know "style" attribute just changed, do this before
+        // delegating to removePositionFixed, which will call
+        // getComputedStyle, which is probably much slower than this
+        // check.  (I'm guessing.  Oh god, this is actually slower, isn't it.)
+        if (mutation.target.style.position === 'fixed') {
+          removePositionFixed(mutation.target, 'Inline style change');
+        }
       }
-    }
-  })
+    })
+  )
 );
 styleAttrObserver.observe(document.body, {
   attributes: true,
@@ -98,21 +117,24 @@ styleAttrObserver.observe(document.body, {
 // sloooow.
 const seenClassChanges = new WeakMap();
 const classAttrObserver = new MutationObserver(
-  instrument('Class observer', mutations => {
-    for (const mutation of mutations) {
-      const classListKey = Array.from(mutation.target.classList)
-        .sort()
-        .toString();
-      let classLists = seenClassChanges.get(mutation.target);
-      if (!classLists) {
-        classLists = seenClassChanges.set(mutation.target, new Set());
+  instrument(
+    'Class observer',
+    limitObserver('Class observer', mutations => {
+      for (const mutation of mutations) {
+        const classListKey = Array.from(mutation.target.classList)
+          .sort()
+          .toString();
+        let classLists = seenClassChanges.get(mutation.target);
+        if (!classLists) {
+          classLists = seenClassChanges.set(mutation.target, new Set());
+        }
+        if (!classLists.has(classListKey)) {
+          classLists.add(classListKey);
+          removePositionFixedAll(mutation.target, 'Class change');
+        }
       }
-      if (!classLists.has(classListKey)) {
-        classLists.add(classListKey);
-        removePositionFixedAll(mutation.target, 'Class change');
-      }
-    }
-  })
+    })
+  )
 );
 classAttrObserver.observe(document.body, {
   attributes: true,
@@ -121,13 +143,16 @@ classAttrObserver.observe(document.body, {
 });
 
 const newNodeObserver = new MutationObserver(
-  instrument('Node creation observer', mutations => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        removePositionFixedAll(node, 'Node change');
+  instrument(
+    'Node creation observer',
+    limitObserver('Node creation observer', mutations => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          removePositionFixedAll(node, 'Node change');
+        }
       }
-    }
-  })
+    })
+  )
 );
 newNodeObserver.observe(document.body, {
   childList: true,
