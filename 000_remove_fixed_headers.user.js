@@ -2,6 +2,7 @@
 // @name Remove fixed headers
 // @namespace org.codefu
 // @match *://*/*
+// @exclude /^https?://[^/]*\bgithub\.com(/|$)/
 // @grant none
 // ==/UserScript==
 
