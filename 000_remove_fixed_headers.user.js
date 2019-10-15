@@ -28,7 +28,7 @@ let instrument = (message, f) => {
 instrument = (message, f) => f;
 
 // Maybe remove position=fixed from element el.
-function removePositionFixed(el) {
+function removePositionFixed(el, source) {
   const style = window.getComputedStyle(el);
   if (
     style.position === 'fixed' &&
@@ -53,19 +53,19 @@ function removePositionFixed(el) {
       rect.width >= window.innerWidth
     ) {
       el.style.position = 'inherit';
-      console.log('Removed position=fixed from', el);
+      console.log(`${source} removed position=fixed from`, el);
     } else {
-      console.log('Not removing position=fixed from', el);
+      console.log(`${source} not removing position=fixed from`, el);
     }
   }
 }
 
 // Maybe remove position=fixed from element el and all descendents.
-function removePositionFixedAll(el) {
+function removePositionFixedAll(el, source) {
   const nodeIter = document.createNodeIterator(el, NodeFilter.SHOW_ELEMENT);
   let node;
   while ((node = nodeIter.nextNode())) {
-    removePositionFixed(node);
+    removePositionFixed(node, source);
   }
 }
 
@@ -77,7 +77,7 @@ const styleAttrObserver = new MutationObserver(
       // getComputedStyle, which is probably much slower than this
       // check.  (I'm guessing.  Oh god, this is actually slower, isn't it.)
       if (mutation.target.style.position === 'fixed') {
-        removePositionFixed(mutation.target);
+        removePositionFixed(mutation.target, 'Inline style change');
       }
     }
   })
@@ -108,7 +108,7 @@ const classAttrObserver = new MutationObserver(
       }
       if (!classLists.has(classListKey)) {
         classLists.add(classListKey);
-        removePositionFixedAll(mutation.target);
+        removePositionFixedAll(mutation.target, 'Class change');
       }
     }
   })
@@ -123,7 +123,7 @@ const newNodeObserver = new MutationObserver(
   instrument('Node creation observer', mutations => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        removePositionFixedAll(node);
+        removePositionFixedAll(node, 'Node change');
       }
     }
   })
@@ -133,6 +133,8 @@ newNodeObserver.observe(document.body, {
   subtree: true
 });
 
-document.querySelectorAll('body *').forEach(removePositionFixed);
+document
+  .querySelectorAll('body *')
+  .forEach(el => removePositionFixed(el, 'Startup'));
 
 console.log('Fixed header removal has been installed');
