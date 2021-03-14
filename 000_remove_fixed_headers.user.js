@@ -7,11 +7,24 @@
 // @grant none
 // ==/UserScript==
 
-// Sites to test this with:
+// Sites this should fix:
 // * https://thewirecutter.com
-// * Pretty much anything on Medium
-// * Google search results
-// * Maybe Mailinator?  (See comment below.)
+// * https://www.wired.com
+// * https://blog.hubspot.com/marketing/medium-publications-to-follow
+
+// Sites this shouldn't break:
+// * https://www.github.com
+// * https://www.google.com/search?q=foo
+// * https://www.mailinator.com/v3/#/#faq_pane
+// * https://www.ebay.com
+// * https://www.enterprise.com/
+// * https://2game.com/
+// * https://www.eventbrite.com/
+// * https://repl.it/
+// * https://www.amazon.com/
+// * https://primenow.amazon.com/
+// * https://www.youtube.com/ (check no white bar atop full screen video)
+// * https://benbernardblog.com/web-scraping-and-crawling-are-perfectly-legal-right/
 
 let instrument = (message, f) => {
   return (...args) => {
